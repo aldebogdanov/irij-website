@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - name: Download latest irij.jar
+        run: |
+          gh release download --repo aldebogdanov/irij --pattern 'irij.jar' --dir .
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone vrata dependency
+        run: |
+          mkdir -p ~/.irij/deps/vrata/v0.1.0
+          git clone --branch v0.1.0 --depth 1 https://github.com/aldebogdanov/vrata.git ~/.irij/deps/vrata/v0.1.0
+
+      - name: Start server and verify
+        run: |
+          java -jar irij.jar --no-spec-lint server.irj &
+          SERVER_PID=$!
+          sleep 5
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080)
+          BODY=$(curl -s http://localhost:8080)
+          kill $SERVER_PID || true
+          if [ "$RESPONSE" != "200" ]; then
+            echo "Server returned HTTP $RESPONSE, expected 200"
+            exit 1
+          fi
+          if ! echo "$BODY" | grep -qi "<html"; then
+            echo "Response does not contain HTML"
+            exit 1
+          fi
+          echo "Smoke test passed: HTTP 200 with HTML response"
