@@ -58,7 +58,7 @@
       }
 
       if (data.ok) {
-        if (data.value && data.value !== '()') {
+        if (data.value !== undefined && data.value !== null) {
           appendOutput('val', ';; => ' + data.value);
           if (ghostLine !== undefined) showGhost(ghostLine, data.value, false);
         }
@@ -202,7 +202,7 @@
       indentUnit: 2,
       tabSize: 2,
       indentWithTabs: false,
-      mode: null,
+      mode: 'irij',
       theme: 'default',
       viewportMargin: Infinity,
       extraKeys: {

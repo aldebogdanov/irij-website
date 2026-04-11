@@ -32,6 +32,7 @@ fn css
     (rule "h3" "font-size:1.1rem;margin-bottom:.75rem;color:var(--accent2);font-weight:600")
     (rule "p" "margin-bottom:1rem;color:var(--muted)")
     (rule ".hero" "text-align:center;padding:4rem 0 3rem")
+    (rule ".hero-logo" "height:160px;width:auto;margin-bottom:1.5rem")
     (rule ".hero h2" "font-size:2.8rem;font-weight:300;color:var(--fg)")
     (rule ".hero h2 em" "font-style:normal;color:var(--accent)")
     (rule ".hero .sub" "color:var(--muted);font-size:1.1rem;margin:.5rem 0 2rem")
@@ -85,6 +86,17 @@ fn css
     (rule ".pg-dot.error" "background:#dc2626")
     (rule ".ghost-result" "color:#007777;font-style:italic;font-family:JetBrains Mono,Fira Code,monospace;font-size:.85rem;padding:2px 0;display:inline-block")
     (rule ".ghost-error" "color:#c0392b;font-style:italic;font-family:JetBrains Mono,Fira Code,monospace;font-size:.85rem;padding:2px 0;display:inline-block")
+    (rule ".pg-editor .cm-keyword" "color:#e67e22;font-weight:bold")
+    (rule ".pg-editor .cm-builtin" "color:#2563eb")
+    (rule ".pg-editor .cm-type" "color:#7c3aed")
+    (rule ".pg-editor .cm-atom" "color:#0d9488")
+    (rule ".pg-editor .cm-number" "color:#2563eb")
+    (rule ".pg-editor .cm-string" "color:#16a34a")
+    (rule ".pg-editor .cm-comment" "color:#9ca3af;font-style:italic")
+    (rule ".pg-editor .cm-operator" "color:#be185d")
+    (rule ".pg-editor .cm-def" "color:#be185d")
+    (rule ".pg-editor .cm-variable" "color:var(--fg)")
+    (rule ".pg-editor .cm-bracket" "color:var(--muted)")
     (media "max-width:700px" #[(rule ".two-col,.grid" "grid-template-columns:1fr") (rule ".hero h2" "font-size:2rem") (rule ".pg-editor .CodeMirror" "height:200px")])
   ])
 
@@ -125,7 +137,7 @@ fn layout
 ;; ═══════════════════════════════════════════════════════════════════
 
 fn home-hero
-  (-> div (cls "hero") #[(h2 {} #[(raw "Where <em>contracts</em> meet <em>effects</em>")]) (p (cls "sub") #["A JVM language with algebraic effects, runtime specs, and property-based contracts"]) (div (cls "badges") #[(badge "v0.2.0" "badge primary") (badge "JVM" "badge") (badge "Virtual Threads" "badge") (badge "ANTLR4" "badge")])])
+  (-> div (cls "hero") #[(img {src= "/Irij.png" alt= "Irij" class= "hero-logo"}) (h2 {} #[(raw "Where <em>contracts</em> meet <em>effects</em>")]) (p (cls "sub") #["A JVM language with algebraic effects, runtime specs, and property-based contracts"]) (div (cls "badges") #[(badge "v0.2.0" "badge primary") (badge "JVM" "badge") (badge "Virtual Threads" "badge") (badge "ANTLR4" "badge")])])
 
 ;; ── Feature cards ────────────────────────────────────────────────
 
@@ -284,6 +296,7 @@ fn pg-head-extras
   (-> #[
     (link-tag {rel= "stylesheet" href= "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"})
     (el "script" {src= "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"} #[])
+    (el "script" {src= "/irij-mode.js"} #[])
     (el "script" {src= "/playground.js" defer= "defer"} #[])
   ])
 
