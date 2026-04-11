@@ -347,6 +347,22 @@ fn handle-session-destroy
   raw-session-destroy (get "id" data)
   json-response (json-encode ({ok= true}))
 
+;; GET /api/session/stream?id=xxx — SSE stream of session output
+fn handle-session-stream
+  => request
+  q := request.query
+  parts := split q "="
+  id := last parts
+  sse := raw-sse-response request
+  raw-session-subscribe id sse
+  sse
+
+fn parse-query
+  => q
+  pairs := split q "&"
+  add-pair := (acc pair -> assoc acc (head (split pair "=")) (last (split pair "=")))
+  fold add-pair {} pairs
+
 ;; Keep old /eval endpoint for backwards compat
 fn handle-eval
   (request -> json-response (json-encode (raw-nrepl-eval-sandboxed (get "code" (json-parse request.body)) 10000)))
@@ -376,6 +392,7 @@ routes := #[
   (route "POST" "/api/session" handle-session-create)
   (route "POST" "/api/session/eval" handle-session-eval)
   (route "POST" "/api/session/destroy" handle-session-destroy)
+  (route "GET" "/api/session/stream" handle-session-stream)
   (route "GET" "/api/examples" handle-examples)
 ]
 

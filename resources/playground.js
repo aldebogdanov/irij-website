@@ -10,6 +10,7 @@
   var sessionId = null;
   var ghostWidget = null;
   var ghostEl = null;
+  var outputStream = null;
 
   // ── Session lifecycle ─────────────────────────────────────────────
 
@@ -18,6 +19,7 @@
       .then(function(r) { return r.json(); })
       .then(function(data) {
         sessionId = data.id;
+        connectOutputStream();
         setStatus('ready', 'Session ' + sessionId.substring(0, 8) + '…');
       })
       .catch(function() {
@@ -25,7 +27,26 @@
       });
   }
 
+  function connectOutputStream() {
+    if (outputStream) { outputStream.close(); outputStream = null; }
+    if (!sessionId) return;
+
+    outputStream = new EventSource('/api/session/stream?id=' + sessionId);
+    outputStream.onmessage = function(e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.type === 'stdout' && msg.text) {
+          appendOutput('out', msg.text);
+        }
+      } catch (ignored) {}
+    };
+    outputStream.onerror = function() {
+      // SSE reconnects automatically, nothing to do
+    };
+  }
+
   function destroySession() {
+    if (outputStream) { outputStream.close(); outputStream = null; }
     if (sessionId) {
       navigator.sendBeacon('/api/session/destroy',
         JSON.stringify({ id: sessionId }));
@@ -53,8 +74,8 @@
     .then(function(data) {
       var ms = Math.round(performance.now() - t0);
 
-      // Show stdout in output panel
-      if (data.stdout && data.stdout.trim()) {
+      // Show stdout only if SSE is not connected (SSE streams it in real-time)
+      if (!outputStream && data.stdout && data.stdout.trim()) {
         appendOutput('out', data.stdout);
       }
 
