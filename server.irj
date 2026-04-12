@@ -370,12 +370,14 @@ fn handle-eval
 pg-examples := #[
   {title= "Hello World" code= "println \"Hello, Irij!\""}
   {title= "Fibonacci" code= "fn fib\n  0 => 1\n  1 => 1\n  n => fib (n - 1) + fib (n - 2)\n\nprintln (fib 10)"}
-  {title= "Pattern Matching" code= "fn describe\n  0 => \"zero\"\n  n | (n < 0) => \"negative\"\n  _ => \"positive\"\n\nprintln (describe 0)\nprintln (describe 42)\nprintln (describe -7)"}
+  {title= "Pattern Matching" code= "fn describe\n  0 => \"zero\"\n  n | (n < 0) => \"negative\"\n  _ => \"positive\"\n\nprintln (describe 0)\nprintln (describe 42)\nprintln (describe (0 - 7))"}
   {title= "Collections" code= "xs := #[1 2 3 4 5]\nprintln (map (x -> x * x) xs)\nprintln (filter (x -> x > 10) (map (x -> x * x) xs))\nprintln (fold + 0 xs)"}
   {title= "Algebraic Effects" code= "effect Greet\n  greet :: Str -> Str\n\nhandler polite :: Greet\n  greet name => resume (\"Hello, \" ++ name ++ \"!\")\n\nhandler casual :: Greet\n  greet name => resume (\"Hey \" ++ name)\n\nfn welcome ::: Greet Console\n  (name -> println (greet name))\n\nwith polite\n  welcome \"Alice\"\n\nwith casual\n  welcome \"Bob\""}
   {title= "Specs" code= "spec Color\n  Red\n  Green\n  Blue\n\nfn to-hex :: Color Str\n  Red => \"#ff0000\"\n  Green => \"#00ff00\"\n  Blue => \"#0000ff\"\n\nprintln (to-hex Red)\nprintln (to-hex Blue)"}
   {title= "Pipelines" code= "result := #[1 2 3 4 5 6 7 8 9 10]\n  |> /? (n -> n > 3)\n  |> @ (n -> n * n)\n  |> /+\n\nprintln result"}
-  {title= "Contracts" code= "fn double-positive\n  pre (n -> n > 0)\n  (n -> n * 2)\n\nprintln (double-positive 5)\n\nr := try (-> double-positive -1)\nmatch r\n  Ok v => println v\n  Err msg => println msg"}
+  {title= "Contracts" code= "fn double-positive\n  pre (n -> n > 0)\n  (n -> n * 2)\n\nprintln (double-positive 5)\n\nr := try (-> double-positive (-1))\nmatch r\n  Ok v => println v\n  Err msg => println msg"}
+  {title= "Concurrency" code= ";; Spawned threads run in virtual threads.\n;; Their output streams here in real-time via SSE.\n\nfn worker\n  => name ms\n  sleep ms\n  println ~ name ++ \" done (\" ++ (to-str ms) ++ \"ms)\"\n\nspawn (-> worker \"alpha\" 200)\nspawn (-> worker \"beta\" 100)\nspawn (-> worker \"gamma\" 300)\n\nprintln \"all spawned\""}
+  {title= "Hot Redefinition" code= ";; Define a function, start a loop, then\n;; redefine the function — it updates live!\n\nfn greet\n  => name\n  println ~ \"Hello, \" ++ name ++ \"!\"\n\nfn run-loop\n  => n\n  greet \"World\"\n  sleep 500\n  if (n > 1) (run-loop (n - 1)) else (println \"done\")\n\nspawn (-> run-loop 6)\n\n;; Now select all, change Hello to Hey,\n;; and press Ctrl+Enter while it runs!"}
 ]
 
 fn handle-examples
