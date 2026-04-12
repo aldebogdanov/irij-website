@@ -2,7 +2,7 @@
 
 ## Running
 - `irij run server.irj` — starts on http://localhost:8080
-- Dependencies managed via `deps.irj` (git deps, not local paths)
+- Dependencies managed via `irij.toml` (git deps, not local paths)
 
 ## Spec Annotations
 - All `pub fn` declarations MUST have spec annotations (`:: InputType OutputType`)
