@@ -13,13 +13,14 @@ use std.db :open
 ;; ═══════════════════════════════════════════════════════════════════
 
 ;; Storage paths
-seeds-db-path := "data/registry.db"
-seeds-storage-dir := "data/seeds"
+seeds-db-dir := "/var/lib/irij.online/seeds-db"
+seeds-db-path := seeds-db-dir ++ "/registry.db"
+seeds-storage-dir := "/var/lib/irij.online/seeds"
 
 ;; Ensure data dirs exist
 fn init-registry-dirs ::: Console
   => _
-  make-dir "data"
+  make-dir seeds-db-dir
   make-dir seeds-storage-dir
 
 ;; Initialize DB schema
