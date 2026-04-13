@@ -1,4 +1,4 @@
-;; server.irj — Irij website (Vrata framework)
+;; server.irj — Irij website + seed registry (Vrata framework)
 ;; Run: irij server.irj
 ;; Visit: http://localhost:8080
 
@@ -6,6 +6,35 @@ use vrata.html :open
 use vrata.css :open
 use vrata.page :open
 use std.serve :open
+use std.db :open
+
+;; ═══════════════════════════════════════════════════════════════════
+;; Seed Registry — Database
+;; ═══════════════════════════════════════════════════════════════════
+
+;; Storage paths
+seeds-db-path := "data/registry.db"
+seeds-storage-dir := "data/seeds"
+
+;; Ensure data dirs exist
+fn init-registry-dirs ::: Console
+  => _
+  make-dir "data"
+  make-dir seeds-storage-dir
+
+;; Initialize DB schema
+fn init-registry-db ::: Console
+  => conn
+  with default-db
+    db-exec conn "CREATE TABLE IF NOT EXISTS packages (name TEXT PRIMARY KEY, owner TEXT NOT NULL, license TEXT, created TEXT DEFAULT (datetime('now')), updated TEXT DEFAULT (datetime('now')))" #[]
+    db-exec conn "CREATE TABLE IF NOT EXISTS versions (id INTEGER PRIMARY KEY AUTOINCREMENT, package_name TEXT NOT NULL REFERENCES packages(name), version TEXT NOT NULL, description TEXT, readme TEXT, author TEXT NOT NULL, checksum TEXT, published TEXT DEFAULT (datetime('now')), UNIQUE(package_name, version))" #[]
+    db-exec conn "CREATE TABLE IF NOT EXISTS version_deps (id INTEGER PRIMARY KEY AUTOINCREMENT, version_id INTEGER NOT NULL REFERENCES versions(id), dep_name TEXT NOT NULL, dep_type TEXT NOT NULL CHECK(dep_type IN ('registry', 'git')), dep_version TEXT, git_url TEXT, git_ref TEXT)" #[]
+  println "Registry DB initialized"
+
+;; Boot registry
+init-registry-dirs ()
+registry-db := db-open seeds-db-path
+init-registry-db registry-db
 
 ;; ═══════════════════════════════════════════════════════════════════
 ;; CSS
@@ -97,6 +126,30 @@ fn css
     (rule ".pg-editor .cm-def" "color:#be185d")
     (rule ".pg-editor .cm-variable" "color:var(--fg)")
     (rule ".pg-editor .cm-bracket" "color:var(--muted)")
+    (rule ".seeds-search" "display:flex;gap:.75rem;margin-bottom:2rem")
+    (rule ".seeds-search input" "flex:1;font-family:inherit;font-size:.95rem;padding:.6rem 1rem;border:1px solid var(--border);border-radius:.5rem;background:var(--card-bg);color:var(--fg)")
+    (rule ".seeds-search input:focus" "outline:none;border-color:var(--accent)")
+    (rule ".seed-card" "background:var(--card-bg);border:1px solid var(--border);border-radius:.75rem;padding:1.25rem;margin-bottom:1rem;transition:border-color .2s")
+    (rule ".seed-card:hover" "border-color:var(--accent)")
+    (rule ".seed-card a" "text-decoration:none")
+    (rule ".seed-header" "display:flex;align-items:baseline;gap:.75rem;margin-bottom:.5rem")
+    (rule ".seed-name" "font-size:1.15rem;font-weight:600;color:var(--accent)")
+    (rule ".seed-version" "font-size:.85rem;color:var(--muted);font-family:JetBrains Mono,monospace")
+    (rule ".seed-desc" "color:var(--muted);font-size:.92rem;margin:0")
+    (rule ".seed-meta" "display:flex;gap:1.5rem;margin-top:.5rem;font-size:.8rem;color:var(--muted)")
+    (rule ".seed-detail-header" "margin-bottom:2rem")
+    (rule ".seed-detail-header h2" "display:flex;align-items:baseline;gap:.75rem")
+    (rule ".seed-install" "background:var(--code-bg);border:1px solid var(--border);border-radius:.5rem;padding:1rem;font-family:JetBrains Mono,monospace;font-size:.88rem;margin:1rem 0")
+    (rule ".version-list" "margin-top:1.5rem")
+    (rule ".version-item" "display:flex;align-items:center;gap:1rem;padding:.6rem 0;border-bottom:1px solid var(--border)")
+    (rule ".version-item:last-child" "border-bottom:none")
+    (rule ".ver-tag" "font-family:JetBrains Mono,monospace;font-weight:600;color:var(--accent);min-width:80px")
+    (rule ".ver-date" "font-size:.8rem;color:var(--muted)")
+    (rule ".ver-author" "font-size:.8rem;color:var(--muted)")
+    (rule ".empty-state" "text-align:center;padding:3rem;color:var(--muted)")
+    (rule ".gh-link" "display:flex;align-items:center;color:var(--muted);transition:color .2s")
+    (rule ".gh-link:hover" "color:var(--accent)")
+    (rule ".gh-link svg" "width:20px;height:20px;fill:currentColor")
     (media "max-width:700px" #[(rule ".two-col,.grid" "grid-template-columns:1fr") (rule ".hero h2" "font-size:2rem") (rule ".pg-editor .CodeMirror" "height:200px")])
   ])
 
@@ -123,8 +176,11 @@ fn badge
 fn nav-link-el
   (href label active -> a {href= href class= (if (href == active) "active" else "")} #[label])
 
+fn github-icon
+  (-> a {class= "gh-link" href= "https://github.com/aldebogdanov/irij" target= "_blank" title= "GitHub"} #[(raw "<svg viewBox=\"0 0 16 16\"><path d=\"M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z\"/></svg>")])
+
 fn make-nav
-  (active -> nav {} #[(nav-link-el "/" "Home" active) (nav-link-el "/playground" "Playground" active)])
+  (active -> nav {} #[(nav-link-el "/" "Home" active) (nav-link-el "/seeds" "Seeds" active) (nav-link-el "/playground" "Playground" active) (github-icon ())])
 
 fn head-extras
   (-> #[(link-tag {rel= "icon" type= "image/png" href= "/Irij-favicon.png"}) (link-tag {rel= "stylesheet" href= "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&family=Roboto+Slab:wght@700&display=swap"})])
@@ -384,6 +440,157 @@ fn handle-examples
   (_ -> json-response (json-encode pg-examples))
 
 ;; ═══════════════════════════════════════════════════════════════════
+;; Seed Registry — Pages
+;; ═══════════════════════════════════════════════════════════════════
+
+fn seed-card-el
+  => s
+  div {class= "seed-card"} #[
+    (a {href= ("/seeds/" ++ s.name)} #[
+      (div {class= "seed-header"} #[
+        (span {class= "seed-name"} #[s.name])
+        (span {class= "seed-version"} #[s.version])])
+      (p {class= "seed-desc"} #[s.description])
+      (div {class= "seed-meta"} #[
+        (span {} #[(raw ("by <strong>" ++ s.owner ++ "</strong>"))])
+        (span {} #[s.published])])])]
+
+fn seeds-page ::: Console
+  => request
+  with default-db
+    seeds := db-query registry-db "SELECT p.name, p.owner, p.license, v.version, v.description, v.published FROM packages p JOIN versions v ON v.package_name = p.name AND v.id = (SELECT MAX(id) FROM versions WHERE package_name = p.name) ORDER BY p.updated DESC" #[]
+    cards := seeds |> @ seed-card-el
+    html ~ layout "Seeds" "/seeds" #[
+      (h2 {} #["Seed Registry"])
+      (p {class= "sub"} #["Browse and search Irij seeds (packages). Publish with: irij publish"])
+      (div {class= "seeds-search"} #[
+        (el "input" {type= "text" placeholder= "Search seeds..." id= "seed-search" onkeyup= "searchSeeds(this.value)"} #[])])
+      (div {id= "seed-list"} cards)
+      (if (empty? seeds) (div {class= "empty-state"} #[(p {} #["No seeds published yet."]) (p {} #["Be the first! Run: irij publish"])]) else (div {} #[]))]
+
+fn seed-detail-page ::: Console
+  => request
+  segments := path-segments request.path "/seeds"
+  name := head segments
+  with default-db
+    pkg := db-query registry-db "SELECT name, owner, license, created FROM packages WHERE name = ?" #[name]
+    if (empty? pkg)
+      html ~ layout "Not Found" "/seeds" #[(h2 {} #["Seed Not Found"]) (p {} #[("No seed named '" ++ name ++ "' exists.")])]
+    else
+      versions := db-query registry-db "SELECT version, description, readme, author, published FROM versions WHERE package_name = ? ORDER BY id DESC" #[name]
+      latest := head versions
+      version-items := versions |> @ render-version-item
+      pkg-info := head pkg
+      html ~ layout name "/seeds" #[
+        (div {class= "seed-detail-header"} #[
+          (h2 {} #[(span {} #[name]) (span {class= "seed-version"} #[latest.version])])
+          (p {class= "sub"} #[latest.description])
+          (div {class= "seed-meta"} #[
+            (span {} #[(raw ("by <strong>" ++ latest.author ++ "</strong>"))])
+            (span {} #[("License: " ++ pkg-info.license)])])])
+        (h3 {} #["Install"])
+        (div {class= "seed-install"} #[(raw (name ++ " = \"" ++ latest.version ++ "\""))])
+        (p {style= "font-size:.85rem;color:var(--muted)"} #["Add to [seeds] in irij.toml"])
+        (div {class= "version-list"} #[
+          (h3 {} #["Versions"])
+          (div {} version-items)])]
+
+fn render-version-item
+  => v
+  div {class= "version-item"} #[
+    (span {class= "ver-tag"} #[v.version])
+    (span {class= "ver-author"} #[v.author])
+    (span {class= "ver-date"} #[v.published])]
+
+;; ═══════════════════════════════════════════════════════════════════
+;; Seed Registry — API
+;; ═══════════════════════════════════════════════════════════════════
+
+;; POST /api/seeds/publish — publish a seed (multipart: metadata JSON + tarball)
+fn handle-seed-publish ::: Console
+  => request
+  meta-json := raw-multipart-field request "metadata"
+  meta := json-parse meta-json
+  name := get "name" meta
+  version := get "version" meta
+  author := get "author" meta
+  description := get "description" meta
+  license := get "license" meta
+  if (name == "" || version == "" || author == "" || description == "")
+    json-response (json-encode ({error= "Missing required fields: name, version, author, description"}))
+  else
+    do-publish request name version author description license
+
+fn do-publish ::: Console
+  => request name version author description license
+  tarball-dir := seeds-storage-dir ++ "/" ++ name
+  make-dir tarball-dir
+  tarball-path := tarball-dir ++ "/" ++ version ++ ".tar.gz"
+  raw-multipart-save request "tarball" tarball-path
+  with default-db
+    existing := db-query registry-db "SELECT id FROM versions WHERE package_name = ? AND version = ?" #[name version]
+    if (empty? existing == false)
+      json-response (json-encode ({error= (name ++ " " ++ version ++ " already published")}))
+    else
+      db-exec registry-db "INSERT INTO packages (name, owner, license, updated) VALUES (?, ?, ?, datetime('now')) ON CONFLICT(name) DO UPDATE SET license = excluded.license, updated = datetime('now')" #[name author license]
+      db-exec registry-db "INSERT INTO versions (package_name, version, description, readme, author) VALUES (?, ?, ?, ?, ?)" #[name version description "" author]
+      println ~ "Published: " ++ name ++ " " ++ version
+      json-response (json-encode ({ok= true name= name version= version}))
+
+;; GET /api/seeds — list/search seeds
+fn handle-seed-list ::: Console
+  => request
+  q := request.query
+  has-search := starts-with? q "q="
+  if (q == "" || has-search == false)
+    with default-db
+      rows := db-query registry-db "SELECT p.name, p.owner, p.license, v.version, v.description, v.published FROM packages p JOIN versions v ON v.package_name = p.name AND v.id = (SELECT MAX(id) FROM versions WHERE package_name = p.name) ORDER BY p.updated DESC" #[]
+      json-response (json-encode rows)
+  else
+    term := substring q 2 (length q)
+    rows := search-seeds term
+    json-response (json-encode rows)
+
+fn search-seeds ::: Console
+  => term
+  pattern := "%" ++ term ++ "%"
+  with default-db
+    db-query registry-db "SELECT p.name, p.owner, p.license, v.version, v.description, v.published FROM packages p JOIN versions v ON v.package_name = p.name AND v.id = (SELECT MAX(id) FROM versions WHERE package_name = p.name) WHERE p.name LIKE ? OR v.description LIKE ? OR v.author LIKE ? ORDER BY CASE WHEN p.name = ? THEN 0 WHEN p.name LIKE ? THEN 1 ELSE 2 END, p.updated DESC" #[pattern pattern pattern term (term ++ "%")]
+
+;; GET /api/seeds/* — route by segment count:
+;;   /api/seeds/:name              → detail
+;;   /api/seeds/:name/:version/download → download tarball
+fn handle-seed-route ::: Console
+  => request
+  segments := path-segments request.path "/api/seeds"
+  count := length segments
+  if (count == 1)
+    handle-seed-detail (head segments)
+  else
+    if (count == 3)
+      handle-seed-download (head segments) (head (tail segments))
+    else
+      {status= 404 body= "Not found" headers= {}}
+
+fn handle-seed-detail ::: Console
+  => name
+  with default-db
+    pkg := db-query registry-db "SELECT name, owner, license, created FROM packages WHERE name = ?" #[name]
+    if (empty? pkg)
+      {status= 404 body= (json-encode ({error= "Seed not found"})) headers= (assoc {} "content-type" "application/json")}
+    else
+      versions := db-query registry-db "SELECT id, version, description, readme, author, published FROM versions WHERE package_name = ? ORDER BY id DESC" #[name]
+      json-response (json-encode ({package= (head pkg) versions= versions}))
+
+fn handle-seed-download ::: Console
+  => name version
+  tarball-path := seeds-storage-dir ++ "/" ++ name ++ "/" ++ version ++ ".tar.gz"
+  if (file-exists? tarball-path)
+    {status= 200 file= tarball-path headers= (assoc (assoc {} "content-type" "application/gzip") "content-disposition" ("attachment; filename=" ++ name ++ "-" ++ version ++ ".tar.gz"))}
+  else
+    {status= 404 body= (json-encode ({error= "Tarball not found"})) headers= (assoc {} "content-type" "application/json")}
+
+;; ═══════════════════════════════════════════════════════════════════
 ;; Router
 ;; ═══════════════════════════════════════════════════════════════════
 
@@ -396,6 +603,11 @@ routes := #[
   (route "POST" "/api/session/destroy" handle-session-destroy)
   (route "GET" "/api/session/stream" handle-session-stream)
   (route "GET" "/api/examples" handle-examples)
+  (route "GET" "/seeds" seeds-page)
+  (route-prefix "GET" "/seeds/" seed-detail-page)
+  (route "POST" "/api/seeds/publish" handle-seed-publish)
+  (route "GET" "/api/seeds" handle-seed-list)
+  (route-prefix "GET" "/api/seeds/" handle-seed-route)
 ]
 
 with default-serve
