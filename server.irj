@@ -9,7 +9,7 @@ use std.serve :open
 use std.db :open
 use std.datastar :open
 
-irij-version := "v0.2.6"
+irij-version := "v0.2.7"
 
 ;; ═══════════════════════════════════════════════════════════════════
 ;; Seed Registry — Database
@@ -24,7 +24,7 @@ seeds-db-path := seeds-db-dir ++ "/registry.db"
 seeds-storage-dir := workdir ++ "/seeds"
 
 ;; Ensure data dirs exist
-fn init-registry-dirs ::: Console
+fn init-registry-dirs ::: Console FileIO
   => _
   make-dir seeds-db-dir
   make-dir seeds-storage-dir
@@ -542,7 +542,7 @@ fn handle-seed-publish
   else
     do-publish request name version author description license
 
-fn do-publish
+fn do-publish ::: FileIO
   => request name version author description license
   tarball-dir := seeds-storage-dir ++ "/" ++ name
   make-dir tarball-dir
@@ -620,7 +620,7 @@ fn handle-seed-detail
       versions := db-query registry-db "SELECT id, version, description, readme, author, published FROM versions WHERE package_name = ? ORDER BY id DESC" #[name]
       json-response (json-encode ({package= (head pkg) versions= versions}))
 
-fn handle-seed-download
+fn handle-seed-download ::: FileIO
   => name version
   tarball-path := seeds-storage-dir ++ "/" ++ name ++ "/" ++ version ++ ".tar.gz"
   if (file-exists? tarball-path)
