@@ -7,6 +7,7 @@ use vrata.css :open
 use vrata.page :open
 use std.serve :open
 use std.db :open
+use std.time :open
 use std.datastar :open
 
 irij-version := "v0.2.7"
@@ -404,32 +405,33 @@ fn playground-page
 ;; ═══════════════════════════════════════════════════════════════════
 
 ;; POST /api/session — create a new persistent sandbox session
-fn handle-session-create
+fn handle-session-create ::: Session
   (_ -> json-response (json-encode ({id= (raw-session-create ())})))
 
 ;; POST /api/session/eval — eval code in a persistent session
-fn handle-session-eval-helper
+fn handle-session-eval-helper ::: Session
   => request
-  data := json-parse request.body
-  id := get "id" data
-  code := get "code" data
-  t0 := time-ms ()
-  result := raw-session-eval id code 10000
-  elapsed := (time-ms ()) - t0
-  json-response (json-encode ({value= (get "value" result) stdout= (get "stdout" result) error= (get "error" result) ok= (get "ok" result) elapsed= elapsed}))
+  with default-time
+    data := json-parse request.body
+    id := get "id" data
+    code := get "code" data
+    t0 := time-now ()
+    result := raw-session-eval id code 10000
+    elapsed := (time-now ()) - t0
+    json-response (json-encode ({value= (get "value" result) stdout= (get "stdout" result) error= (get "error" result) ok= (get "ok" result) elapsed= elapsed}))
 
-fn handle-session-eval
+fn handle-session-eval ::: Session
   (request -> handle-session-eval-helper request)
 
 ;; POST /api/session/destroy — destroy a session
-fn handle-session-destroy
+fn handle-session-destroy ::: Session
   => request
   data := json-parse request.body
   raw-session-destroy (get "id" data)
   json-response (json-encode ({ok= true}))
 
 ;; GET /api/session/stream?id=xxx — SSE stream of session output
-fn handle-session-stream ::: Serve
+fn handle-session-stream ::: Serve Session
   => request
   q := request.query
   parts := split q "="
@@ -458,6 +460,7 @@ pg-examples := #[
   {title= "Contracts" code= "fn double-positive\n  pre (n -> n > 0)\n  (n -> n * 2)\n\nprintln (double-positive 5)\n\nr := try (-> double-positive (-1))\nmatch r\n  Ok v => println v\n  Err msg => println msg"}
   {title= "Concurrency" code= ";; Spawned threads run in virtual threads.\n;; Their output streams here in real-time via SSE.\n\nfn worker ::: Console Time\n  => name ms\n  sleep ms\n  println ~ name ++ \" done (\" ++ (to-str ms) ++ \"ms)\"\n\nspawn (-> worker \"alpha\" 200)\nspawn (-> worker \"beta\" 100)\nspawn (-> worker \"gamma\" 300)\n\nprintln \"all spawned\""}
   {title= "Hot Redefinition" code= ";; Define a function, start a loop, then\n;; redefine the function — it updates live!\n\nfn greet ::: Console\n  => name\n  println ~ \"Hello, \" ++ name ++ \"!\"\n\nfn run-loop ::: Console Time\n  => n\n  greet \"World\"\n  sleep 500\n  if (n > 1) (run-loop (n - 1)) else (println \"done\")\n\nspawn (-> run-loop 6)\n\n;; Now select all, change Hello to Hey,\n;; and press Ctrl+Enter while it runs!"}
+  {title= "Java Interop" code= ";; Clojure-style Class/member — no imports needed.\n;; java.lang.* auto-resolves unqualified.\n\nprintln (Math/abs (-7))\nprintln (Math/max 3 5)\nprintln (Math/PI)\n\nstamp := java.time.Instant/now ()\nprintln stamp\n\n;; Instance methods via dot-access:\nprintln (\"hello\".toUpperCase ())\nprintln (\"  trim me  \".trim ())\n\n;; Constructors via Class/new:\nrnd := java.util.Random/new 42\nprintln (rnd.nextInt 100)"}
 ]
 
 fn handle-examples
