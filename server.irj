@@ -10,7 +10,7 @@ use std.db :open
 use std.time :open
 use std.datastar :open
 
-irij-version := "v0.2.7"
+irij-version := "v0.4.0"
 
 ;; ═══════════════════════════════════════════════════════════════════
 ;; Seed Registry — Database
