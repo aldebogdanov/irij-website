@@ -215,7 +215,7 @@ fn home-hero
 ;; ── Feature cards ────────────────────────────────────────────────
 
 fn home-features
-  (-> div (cls "grid") #[(card "Algebraic Effects" "First-class effect system with deep handlers. Mock any side effect in tests.") (card "Runtime Specs" "Malli-inspired specs replace types. Certify values at construction, validate at boundaries.") (card "Contracts & Laws" "Pre/post conditions with blame tracking. QuickCheck-style property verification.") (card "Structured Concurrency" "scope/fork/await, par, race, timeout. Java virtual threads with auto-cancellation.") (card "Pipeline Operators" "|> pipeline, @ map, /? filter, /+ fold. >> composition, ~ apply-to-rest.") (card "Module System & Packages" "use mod.name :open. Git deps via deps.irj. Pub/private exports. Effect-gated APIs.")])
+  (-> div (cls "grid") #[(card "Algebraic Effects" "First-class effect system with deep handlers. Mock any side effect in tests. State-machine bytecode for hot perform-loops.") (card "Runtime Specs" "Malli-inspired specs replace types. Certify values at construction, validate at boundaries.") (card "Contracts & Laws" "Pre/post conditions with blame tracking. QuickCheck-style property verification.") (card "Structured Concurrency" "scope/fork/await, par, race, timeout. Java virtual threads with auto-cancellation.") (card "Pipeline Operators" "|> pipeline, @ map, /? filter, /+ fold. >> composition, ~ apply-to-rest.") (card "Module System & Packages" "use mod.name :open. Git deps via deps.irj. Pub/private exports. Effect-gated APIs.") (card "Bytecode Compiler" "irij build emits a self-contained JAR. Two lowerings: threaded (vthread+queue) and state-machine (single-thread, trampolined).") (card "Hot Redef + Java Interop" "REPL-driven fn redefinition via invokedynamic + MutableCallSite. Java classes via Class/method, dot-access, ::: JVM capability tracking.")])
 
 ;; ── Code examples ────────────────────────────────────────────────
 
@@ -352,7 +352,9 @@ fn home-roadmap
                          phase-row "done" "Phase 11" "Database effect (SQLite, std.db)" ++
                          phase-row "done" "Phase 12b" "nREPL Playground (browser sandbox)" ++
                          phase-row "done" "Phase 12a" "Package Registry (app in Irij)" ++
-                         phase-row "planned" "Future" "JVM interop, Channels, LSP, GraalVM native"))
+                         phase-row "done" "Phase 13" "Java interop (Class/member, dot-access)" ++
+                         phase-row "done" "Phase 14a-c" "Bytecode compiler: threaded + state-machine effects, hot-redef, JVM capability" ++
+                         phase-row "planned" "Future" "Channels, LSP, GraalVM native, more stdlib effects"))
 
 ;; ── Full home page ───────────────────────────────────────────────
 
