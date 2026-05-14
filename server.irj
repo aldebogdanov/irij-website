@@ -50,50 +50,54 @@ init-registry-db registry-db
 
 fn css
   (-> stylesheet #[
-    (rule ":root" "--bg:#e8edf0;--fg:#2d3748;--accent:#e67e22;--accent2:#334155;--code-bg:#f8f9fc;--card-bg:#fff;--border:#d1d5db;--muted:#6b7280")
-    (rule "*" "margin:0;padding:0;box-sizing:border-box")
-    (rule "body" "font-family:Inter,-apple-system,sans-serif;background:var(--bg);color:var(--fg);line-height:1.7")
-    (rule "a" "color:var(--accent);text-decoration:none;transition:color .2s")
-    (rule "a:hover" "color:#c66a15")
-    (rule ".container" "max-width:1000px;margin:0 auto;padding:0 2rem")
-    (rule "header" "padding:1.5rem 0;border-bottom:2px solid var(--border)")
-    (rule "header .inner" "display:flex;align-items:center;justify-content:space-between")
+    ;; ── chota theme override (CSS variables) ─────────────────────
+    (rule ":root" "--color-primary:#e67e22;--color-lightGrey:#d1d5db;--color-grey:#6b7280;--color-darkGrey:#334155;--color-error:#dc2626;--color-success:#16a34a;--bg-color:#e8edf0;--bg-secondary-color:#f8f9fc;--font-color:#2d3748;--font-family-sans:Inter,-apple-system,sans-serif;--font-family-mono:JetBrains Mono,Fira Code,monospace")
+    ;; Irij-specific colour roles built on the theme variables.
+    (rule ":root" "--accent:var(--color-primary);--accent2:var(--color-darkGrey);--muted:var(--color-grey);--border:var(--color-lightGrey);--code-bg:var(--bg-secondary-color);--card-bg:#fff")
+    ;; ── Base typography (chota's body is sensible; tighten line-height) ──
+    (rule "body" "line-height:1.7")
+    (rule "h1,h2,h3,h4,h5,h6" "color:var(--accent2);font-weight:600")
+    (rule "h2" "font-size:1.8rem;margin-bottom:1.5rem")
+    (rule "h3" "font-size:1.1rem;margin-bottom:.75rem")
+    (rule "p" "color:var(--muted)")
+    ;; ── Header / responsive nav ─────────────────────────────────
+    (rule ".site-header" "padding:1rem 0;border-bottom:2px solid var(--border);position:relative")
+    (rule ".site-header .inner" "display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap")
     (rule ".logo" "display:flex;align-items:center;text-decoration:none")
     (rule ".logo-img" "height:48px;width:auto")
-    (rule "nav" "display:flex;gap:1.5rem")
-    (rule "nav a" "color:var(--muted);font-size:.9rem;font-weight:500")
-    (rule "nav a:hover" "color:var(--accent)")
-    (rule "nav a.active" "color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:2px")
-    (rule "main" "padding:3rem 0")
-    (rule "h2" "font-size:1.8rem;margin-bottom:1.5rem;color:var(--accent2);font-weight:600")
-    (rule "h3" "font-size:1.1rem;margin-bottom:.75rem;color:var(--accent2);font-weight:600")
-    (rule "p" "margin-bottom:1rem;color:var(--muted)")
-    (rule ".hero" "text-align:center;padding:4rem 0 3rem")
+    (rule ".nav-toggle" "display:none")
+    (rule ".nav-toggle-label" "display:none;font-size:1.6rem;cursor:pointer;color:var(--accent);user-select:none;line-height:1")
+    (rule ".nav-links" "display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap")
+    (rule ".nav-links a" "color:var(--muted);font-size:.9rem;font-weight:500;text-decoration:none;transition:color .2s")
+    (rule ".nav-links a:hover" "color:var(--accent)")
+    (rule ".nav-links a.active" "color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:2px")
+    ;; ── Hero ───────────────────────────────────────────────────
+    (rule ".hero" "text-align:center;padding:3rem 0 2rem")
     (rule ".hero-logo" "height:160px;width:auto;margin-bottom:1.5rem")
-    (rule ".hero h2" "font-size:2.8rem;font-weight:300;color:var(--fg)")
+    (rule ".hero h2" "font-size:2.6rem;font-weight:300;color:var(--font-color);margin-bottom:.5rem")
     (rule ".hero h2 em" "font-style:normal;color:var(--accent)")
-    (rule ".hero .sub" "color:var(--muted);font-size:1.1rem;margin:.5rem 0 2rem")
+    (rule ".hero .sub" "color:var(--muted);font-size:1.05rem;margin:.5rem 0 1.5rem")
     (rule ".badges" "display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap")
     (rule ".badge" "display:inline-block;background:var(--card-bg);border:1px solid var(--border);padding:.3rem .8rem;border-radius:1rem;font-size:.8rem;color:var(--muted)")
     (rule ".badge.primary" "background:var(--accent);color:#fff;border-color:var(--accent)")
-    (rule "pre" "background:var(--code-bg);border:1px solid var(--border);border-radius:.5rem;padding:1.25rem;overflow-x:auto;font-size:.88rem;line-height:1.6;margin:1rem 0")
-    (rule "code" "font-family:JetBrains Mono,Fira Code,monospace")
-    (rule "pre code" "color:var(--fg)")
+    ;; ── Code blocks + syntax colors ─────────────────────────────
+    (rule "pre" "background:var(--code-bg);border:1px solid var(--border);border-radius:.5rem;padding:1rem;overflow-x:auto;font-size:.85rem;line-height:1.5;margin:1rem 0")
+    (rule "code" "font-family:var(--font-family-mono)")
+    (rule "pre code" "color:var(--font-color)")
     (rule ".c" "color:#9ca3af")
-    (rule ".k" "color:#e67e22")
-    (rule ".s" "color:#16a34a")
+    (rule ".k" "color:var(--accent)")
+    (rule ".s" "color:var(--color-success)")
     (rule ".n" "color:#2563eb")
     (rule ".t" "color:#7c3aed")
     (rule ".op" "color:#be185d")
-    (rule ".grid" "display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem")
-    (rule ".card" "background:var(--card-bg);border:1px solid var(--border);border-radius:.75rem;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.06)")
-    (rule ".card p" "color:var(--muted);font-size:.92rem")
-    (rule ".two-col" "display:grid;grid-template-columns:1fr 1fr;gap:2rem")
-    (rule ".section-sep" "margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)")
-    (rule "table" "width:100%;border-collapse:collapse;margin:1rem 0")
-    (rule "th,td" "padding:.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)")
-    (rule "th" "color:var(--accent);font-weight:600")
-    (rule "footer" "border-top:2px solid var(--border);padding:2rem 0;text-align:center;color:var(--muted);font-size:.85rem")
+    ;; ── Feature grid + cards (override chota's full-bleed card) ─
+    (rule ".feature-grid" "display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem")
+    (rule ".card" "background:var(--card-bg);border:1px solid var(--border);border-radius:.5rem;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.04);margin:0")
+    (rule ".card p" "color:var(--muted);font-size:.92rem;margin-bottom:0")
+    (rule ".section-sep" "margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)")
+    ;; ── Footer ──────────────────────────────────────────────────
+    (rule "footer" "border-top:2px solid var(--border);padding:1.5rem 0;text-align:center;color:var(--muted);font-size:.85rem;margin-top:3rem")
+    ;; ── Roadmap rows ────────────────────────────────────────────
     (rule ".phase" "display:grid;grid-template-columns:auto 1fr;gap:.25rem .75rem;align-items:center")
     (rule ".st" "font-size:.85rem;padding:.15rem .5rem;border-radius:.25rem;text-align:center")
     (rule ".done" "background:#dcfce7;color:#166534")
@@ -158,7 +162,16 @@ fn css
     (rule ".gh-link" "display:flex;align-items:center;color:var(--muted);transition:color .2s")
     (rule ".gh-link:hover" "color:var(--accent)")
     (rule ".gh-link svg" "width:20px;height:20px;fill:currentColor")
-    (media "max-width:700px" #[(rule ".two-col,.grid" "grid-template-columns:1fr") (rule ".hero h2" "font-size:2rem") (rule ".pg-editor .CodeMirror" "height:200px")])
+    ;; ── Responsive: hamburger nav + mobile-friendly layout ──────
+    (media "max-width:768px" #[
+      (rule ".nav-toggle-label" "display:block")
+      (rule ".nav-links" "display:none;flex-direction:column;align-items:flex-start;gap:.75rem;width:100%;padding:1rem 0;margin-top:.5rem;border-top:1px solid var(--border);order:99")
+      (rule ".nav-toggle:checked ~ .nav-links" "display:flex")
+      (rule ".two-col,.grid,.feature-grid" "grid-template-columns:1fr")
+      (rule ".hero" "padding:2rem 0 1.5rem")
+      (rule ".hero-logo" "height:120px")
+      (rule ".hero h2" "font-size:1.8rem")
+      (rule ".pg-editor .CodeMirror" "height:200px")])
   ])
 
 ;; ═══════════════════════════════════════════════════════════════════
@@ -185,16 +198,29 @@ fn nav-link-el
   (href label active -> a {href= href class= (if (href == active) "active" else "")} #[label])
 
 fn github-icon
-  (-> a {class= "gh-link" href= "https://github.com/aldebogdanov/irij" target= "_blank" title= "GitHub"} #[(raw "<svg viewBox=\"0 0 16 16\"><path d=\"M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z\"/></svg>")])
+  (-> a {class= "gh-link" href= "https://github.com/aldebogdanov/irij" target= "_blank" title= "GitHub"} #[(raw "<svg viewBox=\"0 0 16 16\" width=\"20\" height=\"20\" fill=\"currentColor\" style=\"vertical-align:middle\"><path d=\"M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z\"/></svg>")])
 
+;; Responsive nav with CSS-only hamburger. The checkbox + label
+;; pattern needs no JS — the `.nav-toggle:checked ~ .nav-links`
+;; selector toggles visibility under the mobile media query.
 fn make-nav
-  (active -> nav {} #[(nav-link-el "/" "Home" active) (nav-link-el "/seeds" "Seeds" active) (nav-link-el "/playground" "Playground" active) (github-icon ())])
+  (active -> raw ("<input type=\"checkbox\" id=\"nav-toggle\" class=\"nav-toggle\" />"
+                  ++ "<label for=\"nav-toggle\" class=\"nav-toggle-label\" aria-label=\"Toggle menu\">☰</label>"
+                  ++ "<nav class=\"nav-links\">"
+                  ++ "<a href=\"/\" class=\"" ++ (if (active == "/") "active" else "") ++ "\">Home</a>"
+                  ++ "<a href=\"/seeds\" class=\"" ++ (if (active == "/seeds") "active" else "") ++ "\">Seeds</a>"
+                  ++ "<a href=\"/playground\" class=\"" ++ (if (active == "/playground") "active" else "") ++ "\">Playground</a>"
+                  ++ "<a href=\"/docs\" class=\"" ++ (if (active == "/docs") "active" else "") ++ "\">Docs</a>"
+                  ++ "<a class=\"gh-link\" href=\"https://github.com/aldebogdanov/irij\" target=\"_blank\" title=\"GitHub\"><svg viewBox=\"0 0 16 16\" width=\"20\" height=\"20\" fill=\"currentColor\" style=\"vertical-align:middle\"><path d=\"M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z\"/></svg></a>"
+                  ++ "</nav>"))
 
 fn head-extras :: #[_] _
-  (extras -> #[(link-tag {rel= "icon" type= "image/png" href= "/Irij-favicon.png"}) (link-tag {rel= "stylesheet" href= "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&family=Roboto+Slab:wght@700&display=swap"})] ++ extras)
+  (extras -> #[(link-tag {rel= "icon" type= "image/png" href= "/Irij-favicon.png"})
+               (link-tag {rel= "stylesheet" href= "https://unpkg.com/chota@0.9.2/dist/chota.min.css"})
+               (link-tag {rel= "stylesheet" href= "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&family=Roboto+Slab:wght@700&display=swap"})] ++ extras)
 
 fn layout-head-extra :: _ #[_] _ #[_] _
-  (ttl h-extras active body-children -> page (ttl ++ " — Irij") (css ()) (head-extras h-extras) #[(div (cls "container") #[(header {} #[(div (cls "inner") #[(a {class= "logo" href= "/"} #[(img {src= "/Irij.png" alt= "Irij" class= "logo-img"})]) (make-nav active)])]) (main {} body-children) (footer {} #["Irij " ++ irij-version ++ " — Where contracts meet effects"])])])
+  (ttl h-extras active body-children -> page (ttl ++ " — Irij") (css ()) (head-extras h-extras) #[(div (cls "container") #[(header (cls "site-header") #[(div (cls "inner") #[(a {class= "logo" href= "/"} #[(img {src= "/Irij.png" alt= "Irij" class= "logo-img"})]) (make-nav active)])]) (main {} body-children) (footer {} #["Irij " ++ irij-version ++ " — Where contracts meet effects"])])])
 
 fn layout
   (ttl active body-children -> layout-head-extra ttl #[] active body-children)
@@ -215,7 +241,7 @@ fn home-hero
 ;; ── Feature cards ────────────────────────────────────────────────
 
 fn home-features
-  (-> div (cls "grid") #[(card "Algebraic Effects" "First-class effect system with deep handlers. Mock any side effect in tests. State-machine bytecode for hot perform-loops.") (card "Runtime Specs" "Malli-inspired specs replace types. Certify values at construction, validate at boundaries.") (card "Contracts & Laws" "Pre/post conditions with blame tracking. QuickCheck-style property verification.") (card "Structured Concurrency" "scope/fork/await, par, race, timeout. Java virtual threads with auto-cancellation.") (card "Pipeline Operators" "|> pipeline, @ map, /? filter, /+ fold. >> composition, ~ apply-to-rest.") (card "Module System & Packages" "use mod.name :open. Git deps via deps.irj. Pub/private exports. Effect-gated APIs.") (card "Bytecode Compiler" "irij build emits a self-contained JAR. Two lowerings: threaded (vthread+queue) and state-machine (single-thread, trampolined).") (card "Hot Redef + Java Interop" "REPL-driven fn redefinition via invokedynamic + MutableCallSite. Java classes via Class/method, dot-access, ::: JVM capability tracking.")])
+  (-> div (cls "feature-grid") #[(card "Algebraic Effects" "First-class effect system with deep handlers. Mock any side effect in tests. State-machine bytecode for hot perform-loops.") (card "Runtime Specs" "Malli-inspired specs replace types. Certify values at construction, validate at boundaries.") (card "Contracts & Laws" "Pre/post conditions with blame tracking. QuickCheck-style property verification.") (card "Structured Concurrency" "scope/fork/await, par, race, timeout. Java virtual threads with auto-cancellation.") (card "Pipeline Operators" "|> pipeline, @ map, /? filter, /+ fold. >> composition, ~ apply-to-rest.") (card "Module System & Packages" "use mod.name :open. Git deps via deps.irj. Pub/private exports. Effect-gated APIs.") (card "Bytecode Compiler" "irij build emits a self-contained JAR. Two lowerings: threaded (vthread+queue) and state-machine (single-thread, trampolined).") (card "Hot Redef + Java Interop" "REPL-driven fn redefinition via invokedynamic + MutableCallSite. Java classes via Class/method, dot-access, ::: JVM capability tracking.")])
 
 ;; ── Code examples ────────────────────────────────────────────────
 
@@ -637,9 +663,42 @@ fn handle-seed-download ::: FileIO
 ;; Router
 ;; ═══════════════════════════════════════════════════════════════════
 
+;; ── Docs / internals knowledge directory ────────────────────────
+;;
+;; Surface for the under-the-hood design docs. Pages live in the
+;; main Irij repo at `docs/internals/` — this page lists them with
+;; short descriptions and links to the GitHub-rendered Markdown.
+
+fn doc-card
+  (slug ttl desc -> div (cls "card") #[
+    (h3 {} #[(a {href= ("https://github.com/aldebogdanov/irij/blob/main/docs/internals/" ++ slug ++ ".md") target= "_blank"} #[ttl])])
+    (p {} #[desc])])
+
+fn docs-page
+  (req ->
+    html ~ layout "Docs" "/docs" #[
+      (h2 {} #["How Irij Works"])
+      (p {} #["Design decisions, code structure, and the trade-offs behind each subsystem. Pages hosted on GitHub for now; will be rendered inline in a future release."])
+      (div (cls "feature-grid") #[
+        (doc-card "pipeline" "Pipeline" "Source → AST → values. The two-back-ends split and what it implies.")
+        (doc-card "parser" "Parser" "ANTLR4 grammar + indent rewriter. Lexer quirks and reserved-word traps.")
+        (doc-card "ast" "AST" "Sealed-interface hierarchies for Decl/Stmt/Expr/Pattern. Why records.")
+        (doc-card "interpreter" "Interpreter" "Tree-walking eval, environments, effect stack, handler dispatch.")
+        (doc-card "bytecode" "Bytecode Compiler" "ClassEmitter + ASM. Method shape, variable resolution, indirection.")
+        (doc-card "effects" "Effects" "Threaded vs state-machine lowering. Trampoline + lifted locals.")
+        (doc-card "tco" "Tail-Call Optimization" "Self-TCO via GOTO + arg rebind. Mutual TCO trade-offs.")
+        (doc-card "hot-redef" "Hot Redef" "invokedynamic + MutableCallSite. The --direct-linking deploy mode.")
+        (doc-card "specs" "Specs" "Runtime predicates, contracts, blame, law verification.")
+        (doc-card "modules" "Modules" "mod/use/pub. Inlining, alias rewriting, blame envelopes.")
+        (doc-card "concurrency" "Concurrency" "Virtual threads, structured concurrency, cross-mode dispatch.")
+        (doc-card "jvm-capability" "JVM Capability" "Why all Java interop requires ::: JVM.")
+        (doc-card "stdlib" "Stdlib" "What lives in Java vs Irij. The Phase 3 port.")
+        (doc-card "glossary" "Glossary" "Terms used throughout these docs.")])])
+
 routes := #[
   (route "GET" "/" home-page)
   (route "GET" "/playground" playground-page)
+  (route "GET" "/docs" docs-page)
   (route "POST" "/eval" handle-eval)
   (route "POST" "/api/session" handle-session-create)
   (route "POST" "/api/session/eval" handle-session-eval)
